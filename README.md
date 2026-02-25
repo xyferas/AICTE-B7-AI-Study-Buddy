@@ -25,10 +25,7 @@ A professional, AI-powered learning copilot designed to help students transcribe
    pip install -r requirements.txt
    ```
 
-3. **Install FFmpeg** (Required for audio processing):
-   - **Windows**: `pip install ffmpeg-python` and ensure FFmpeg is in your PATH.
-   - **macOS**: `brew install ffmpeg`
-   - **Linux**: `sudo apt install ffmpeg`
+---
 
 ---
 
