@@ -14,6 +14,14 @@ SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-replace-me")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 7 days
 
+# --- BCRYPT 4.0 COMPATIBILITY FIX ---
+# Passlib hasn't been updated for bcrypt > 4.0 which aggressively throws exceptions 
+# for >72 byte secrets instead of silently truncating like it used to.
+import passlib.handlers.bcrypt
+setattr(passlib.handlers.bcrypt._BcryptWrapper, "ident", b"2b")
+setattr(passlib.handlers.bcrypt._BcryptWrapper, "ident_alt", b"2y")
+# ------------------------------------
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/login")
 
