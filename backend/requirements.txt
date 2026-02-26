@@ -6,6 +6,6 @@ huggingface_hub
 fastapi
 uvicorn
 sqlalchemy
-passlib[bcrypt]
+bcrypt
 python-jose[cryptography]
 python-multipart

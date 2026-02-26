@@ -1,35 +1,33 @@
 import os
 from datetime import datetime, timedelta
 from typing import Optional
-from passlib.context import CryptContext
 from jose import JWTError, jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from database import get_db
 import models
+import bcrypt
 
 # Use a secure secret key in production, loaded from environment
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-replace-me")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 7 days
 
-# --- BCRYPT 4.0 COMPATIBILITY FIX ---
-# Passlib hasn't been updated for bcrypt > 4.0 which aggressively throws exceptions 
-# for >72 byte secrets instead of silently truncating like it used to.
-import passlib.handlers.bcrypt
-setattr(passlib.handlers.bcrypt._BcryptWrapper, "ident", b"2b")
-setattr(passlib.handlers.bcrypt._BcryptWrapper, "ident_alt", b"2y")
-# ------------------------------------
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/login")
 
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    try:
+        return bcrypt.checkpw(
+            plain_password.encode('utf-8'), 
+            hashed_password.encode('utf-8')
+        )
+    except Exception:
+        return False
 
-def get_password_hash(password):
-    return pwd_context.hash(password)
+def get_password_hash(password: str) -> str:
+    hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+    return hashed.decode('utf-8')
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
