@@ -23,13 +23,15 @@ export default function ChatTab() {
         e.preventDefault();
         if (!input.trim() || loading) return;
 
+        const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
         const userMsg = input.trim();
         setInput('');
         setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
         setLoading(true);
 
         try {
-            const res = await axios.post('http://localhost:8000/api/chat', {
+            const res = await axios.post(`${API_URL}/api/chat`, {
                 question: userMsg,
                 level: level
             });

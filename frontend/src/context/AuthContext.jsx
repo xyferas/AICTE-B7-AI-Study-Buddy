@@ -23,10 +23,15 @@ export const AuthProvider = ({ children }) => {
         }
     }, [token]);
 
-    const fetchUser = async () => {
+    // Use environment variable if set, otherwise default to localhost
+    const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+    const checkAuth = async () => { // Renamed from fetchUser to checkAuth
         try {
             // Create axios instance with base URL for local auth
-            const res = await axios.get('http://localhost:8000/api/me');
+            const res = await axios.get(`${API_URL}/api/me`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             setUser(res.data);
         } catch (err) {
             console.error('Failed to fetch user', err);
@@ -37,12 +42,13 @@ export const AuthProvider = ({ children }) => {
     };
 
     const login = async (email, password) => {
-        const res = await axios.post('http://localhost:8000/api/login', { email, password });
+        const res = await axios.post(`${API_URL}/api/login`, { email, password });
         setToken(res.data.access_token);
+        localStorage.setItem('token', res.data.access_token); // Added this line
     };
 
     const register = async (name, email, password) => {
-        await axios.post('http://localhost:8000/api/register', { name, email, password });
+        await axios.post(`${API_URL}/api/register`, { name, email, password });
     };
 
     const logout = () => {

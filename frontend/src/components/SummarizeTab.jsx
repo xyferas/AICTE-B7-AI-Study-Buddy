@@ -17,7 +17,8 @@ export default function SummarizeTab() {
         setIsSaving(true);
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:8000/api/saved-content', {
+            const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+            await axios.post(`${API_URL}/api/saved-content`, {
                 content_type: 'summary',
                 title: text.substring(0, 40) + (text.length > 40 ? '...' : ''),
                 content_data: summary
@@ -39,8 +40,10 @@ export default function SummarizeTab() {
         setError('');
         setSummary('');
 
+        const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
         try {
-            const res = await axios.post('http://localhost:8000/api/summarize', { text });
+            const res = await axios.post(`${API_URL}/api/summarize`, { text });
             setSummary(res.data.summary);
         } catch (err) {
             setError(err.response?.data?.detail || 'Failed to generate summary');

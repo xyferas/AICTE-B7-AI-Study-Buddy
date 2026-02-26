@@ -23,8 +23,10 @@ export default function PlannerTab() {
         setError('');
         setPlan('');
 
+        const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
         try {
-            const res = await axios.post('http://localhost:8000/api/plan', {
+            const res = await axios.post(`${API_URL}/api/plan`, {
                 topics,
                 end_date: endDate ? endDate.toISOString().split('T')[0] : '',
                 hours_per_day: hours,

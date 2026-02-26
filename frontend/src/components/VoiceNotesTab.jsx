@@ -22,7 +22,8 @@ export default function VoiceNotesTab() {
             const token = localStorage.getItem('token');
             // Extract a title string from the raw transcript.
             let titleSource = transcript ? transcript : summary;
-            await axios.post('http://localhost:8000/api/saved-content', {
+            const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+            await axios.post(`${API_URL}/api/saved-content`, {
                 content_type: 'notes',
                 title: titleSource.substring(0, 40) + (titleSource.length > 40 ? '...' : ''),
                 content_data: summary
@@ -66,11 +67,11 @@ export default function VoiceNotesTab() {
         const formData = new FormData();
         formData.append('audio', file);
 
+        // 1. Transcribe the audio
         try {
-            const res = await axios.post('http://localhost:8000/api/transcribe', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
+            const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+            const res = await axios.post(`${API_URL}/api/transcribe`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
             });
             const transcribedText = res.data.transcript;
             setTranscript(transcribedText);
@@ -83,8 +84,10 @@ export default function VoiceNotesTab() {
 
     const generateSummary = async (textToSummarize) => {
         setLoadingSummary(true);
+        // 2. Summarize the transcript
         try {
-            const res = await axios.post('http://localhost:8000/api/summarize', { text: textToSummarize });
+            const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+            const res = await axios.post(`${API_URL}/api/summarize`, { text: textToSummarize });
             setSummary(res.data.summary);
         } catch (err) {
             setError('Audio transcribed, but failed to summarize: ' + (err.response?.data?.detail || err.message));

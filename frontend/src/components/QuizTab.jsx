@@ -47,9 +47,14 @@ export default function QuizTab() {
         if (!topic.trim() && !text.trim()) return;
         setLoading(true);
         setError('');
+        setQuestions(null); // Reset questions to null to show input form again if needed
+        setCurrentIndex(0);
+        setAnswers([]);
+
+        const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
         try {
-            const res = await axios.post('http://localhost:8000/api/quiz', {
+            const res = await axios.post(`${API_URL}/api/quiz`, {
                 topic: mode === 'topic' ? topic : '',
                 text: mode === 'text' ? text : ''
             });

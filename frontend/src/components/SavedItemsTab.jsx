@@ -14,7 +14,8 @@ export default function SavedItemsTab() {
         try {
             setLoading(true);
             const token = localStorage.getItem('token');
-            const res = await axios.get('http://localhost:8000/api/saved-content', {
+            const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+            const res = await axios.get(`${API_URL}/api/saved-content`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setItems(res.data);
@@ -33,7 +34,8 @@ export default function SavedItemsTab() {
         e.stopPropagation();
         try {
             const token = localStorage.getItem('token');
-            await axios.delete(`http://localhost:8000/api/saved-content/${id}`, {
+            const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+            await axios.delete(`${API_URL}/api/saved-content/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setItems(items.filter(item => item.id !== id));

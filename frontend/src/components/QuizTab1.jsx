@@ -103,8 +103,10 @@ export default function QuizTab() {
         setLoading(true);
         setError('');
 
+        const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
         try {
-            const res = await axios.post('http://localhost:8000/api/quiz', {
+            const res = await axios.post(`${API_URL}/api/quiz`, {
                 topic: mode === 'topic' ? topic : '',
                 text: mode === 'text' ? text : ''
             });
@@ -146,7 +148,7 @@ export default function QuizTab() {
                 zIndex: 1000
             });
 
-           fireEmojiFirecracker(['😀','🥳','🎉','🎊','🎈']);
+            fireEmojiFirecracker(['😀', '🥳', '🎉', '🎊', '🎈']);
         } else {
             playSound('wrong');
             const defaults = { origin: { y: 0.5 }, zIndex: 1000, gravity: 1.5, scalar: 0.8 };
@@ -161,7 +163,7 @@ export default function QuizTab() {
                 zIndex: 1000
             });
 
-            fireEmojiFirecracker(['💀','❌','😭','☠️']);
+            fireEmojiFirecracker(['💀', '❌', '😭', '☠️']);
 
             if ("vibrate" in navigator) {
                 navigator.vibrate([200, 100, 200]);
