@@ -1,5 +1,5 @@
 import os
-import streamlit as st
+
 
 from dotenv import load_dotenv
 from huggingface_hub import InferenceClient
@@ -21,7 +21,7 @@ def transcribe_audio(uploaded_file, model: str | None = None) -> str:
       - HF_ASR_MODEL (default: openai/whisper-large-v3)
     """
     def get_api_key(name):
-        return os.getenv(name) or (st.secrets.get(name) if name in st.secrets else None)
+        return os.getenv(name) 
 
     token = get_api_key("HF_TOKEN") or get_api_key("HF_API_TOKEN") or get_api_key("HUGGINGFACEHUB_API_TOKEN")
     if not token:

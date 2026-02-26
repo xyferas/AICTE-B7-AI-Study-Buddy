@@ -1,5 +1,5 @@
 import os
-import streamlit as st
+
 from google import genai
 from dotenv import load_dotenv
 
@@ -8,7 +8,7 @@ load_dotenv()
 
 def get_api_key(name):
     """Retrieve API key from environment or streamlit secrets."""
-    return os.getenv(name) or (st.secrets.get(name) if name in st.secrets else None)
+    return os.getenv(name) 
 
 client = genai.Client(api_key=get_api_key("GEMINI_API_KEY"))
 
@@ -31,7 +31,7 @@ Topic:
 """
 
     response = client.models.generate_content(
-        model="gemini-2.5-flash-lite",
+        model="gemini-2.5-flash",
         contents=prompt,
     )
 

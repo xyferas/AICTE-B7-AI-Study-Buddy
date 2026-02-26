@@ -1,5 +1,0 @@
-streamlit
-google-genai
-python-dotenv
-requests
-huggingface_hub
