@@ -1,39 +1,27 @@
 import os
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import requests
 from dotenv import load_dotenv
 
 # Try to load .env from the root directory (one level up from backend)
 dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
 load_dotenv(dotenv_path, override=True)
 
-# You can also fall back to the backend directory if needed, 
-# although load_dotenv handles the logic nicely if specified carefully.
-# load_dotenv()
-
 def send_otp_email(receiver_email: str, otp_code: str):
     """
-    Sends an OTP code to the provided email address using SMTP credentials from .env.
+    Sends an OTP code via the Resend API using standard HTTP (Port 443),
+    bypassing Render's strict outbound SMTP blocks.
     """
-    smtp_server = os.getenv("SMTP_SERVER")
-    smtp_port = os.getenv("SMTP_PORT")
-    smtp_username = os.getenv("SMTP_USERNAME")
-    smtp_password = os.getenv("SMTP_PASSWORD")
+    api_key = os.getenv("RESEND_API_KEY")
 
-    if not all([smtp_server, smtp_port, smtp_username, smtp_password]):
-        print(f"--- [WARNING] SMTP credentials missing in .env. Faking OTP send to {receiver_email}: {otp_code} ---")
-        return True # Simulate success for testing environments without credentials
+    if not api_key:
+        print(f"--- [WARNING] RESEND_API_KEY missing. Faking OTP send to {receiver_email}: {otp_code} ---")
+        return True # Simulate success for local testing without an API key
 
-    sender_email = smtp_username
+    # Resend requires you to send from `onboarding@resend.dev` to your registered email address
+    # if you haven't verified a custom domain yet.
+    sender_email = "onboarding@resend.dev"
 
-    message = MIMEMultipart("alternative")
-    message["Subject"] = "Your AI Study Buddy OTP Code"
-    message["From"] = f"AI Study Buddy <{sender_email}>"
-    message["To"] = receiver_email
-
-    # HTML Email body
-    html = f"""
+    html_content = f"""
     <html>
       <body style="font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 30px;">
         <div style="max-w: 500px; margin: 0 auto; background-color: #ffffff; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
@@ -54,23 +42,24 @@ def send_otp_email(receiver_email: str, otp_code: str):
     </html>
     """
     
-    html_part = MIMEText(html, "html")
-    message.attach(html_part)
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "from": f"AI Study Buddy <{sender_email}>",
+        "to": [receiver_email],
+        "subject": "Your AI Study Buddy OTP Code",
+        "html": html_content
+    }
 
     try:
-        port = int(smtp_port)
-        # Create a secure SSL context
-        # Use SMTP_SSL for port 465, or STARTTLS for port 587
-        if port == 465:
-            server = smtplib.SMTP_SSL(smtp_server, port)
-        else:
-            server = smtplib.SMTP(smtp_server, port)
-            server.starttls()
-            
-        server.login(smtp_username, smtp_password)
-        server.sendmail(sender_email, receiver_email, message.as_string())
-        server.quit()
+        response = requests.post("https://api.resend.com/emails", json=payload, headers=headers)
+        response.raise_for_status() # raises an exception for 4xx/5xx responses
         return True
-    except Exception as e:
-        print(f"Failed to send email to {receiver_email}: {e}")
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to send email via Resend to {receiver_email}: {e}")
+        if e.response is not None:
+            print(f"Resend API Error Details: {e.response.text}")
         return False

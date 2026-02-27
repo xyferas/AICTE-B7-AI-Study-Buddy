@@ -8,7 +8,13 @@ from typing import Optional, List
 import secrets
 
 from database import engine, get_db, Base
-from models import User, SavedContent, OTP
+from models import User, SavedContent
+from collections import defaultdict
+from typing import Dict, Any
+
+# In-memory store for OTPs and rate limiting
+# Format: { "email@example.com": { "otp_code": "123456", "expires_at": datetime, "requests": [datetime, ...] } }
+otp_cache: Dict[str, Dict[str, Any]] = defaultdict(lambda: {"requests": []})
 from auth import verify_password, get_password_hash, create_access_token, get_current_user, ACCESS_TOKEN_EXPIRE_MINUTES
 from email_utils import send_otp_email
 
@@ -119,25 +125,25 @@ def login(login_data: LoginData, db: Session = Depends(get_db)):
     return {"access_token": access_token, "token_type": "bearer"}
 
 @app.post("/api/request-otp")
-def request_otp(request: OTPRequestSchema, db: Session = Depends(get_db)):
+def request_otp(request: OTPRequestSchema):
     email = request.email.strip().lower()
+    now = datetime.utcnow()
+    user_data = otp_cache[email]
     
-    # Check rate limit: max 5 requests per 5 minutes
-    five_mins_ago = datetime.utcnow() - timedelta(minutes=5)
-    recent_requests_count = db.query(OTP).filter(
-        OTP.email == email,
-        OTP.created_at >= five_mins_ago
-    ).count()
+    # Clean up requests older than 5 minutes for rate limiting
+    five_mins_ago = now - timedelta(minutes=5)
+    user_data["requests"] = [req_time for req_time in user_data["requests"] if req_time >= five_mins_ago]
     
-    if recent_requests_count >= 5:
+    if len(user_data["requests"]) >= 5:
         raise HTTPException(status_code=429, detail="Rate limit exceeded. Maximum 5 requests per 5 minutes.")
         
     otp_code = "".join([str(secrets.randbelow(10)) for _ in range(6)])
-    expires_at = datetime.utcnow() + timedelta(minutes=5)
+    expires_at = now + timedelta(minutes=5)
     
-    new_otp = OTP(email=email, otp_code=otp_code, expires_at=expires_at)
-    db.add(new_otp)
-    db.commit()
+    # Store in memory
+    user_data["otp_code"] = otp_code
+    user_data["expires_at"] = expires_at
+    user_data["requests"].append(now)
     
     # Send OTP via Email
     email_sent = send_otp_email(email, otp_code)
@@ -154,19 +160,14 @@ def verify_otp(request: OTPVerifySchema, db: Session = Depends(get_db)):
     email = request.email.strip().lower()
     otp_code = request.otp_code.strip()
     
-    otp_record = db.query(OTP).filter(
-        OTP.email == email,
-        OTP.otp_code == otp_code,
-        OTP.is_used == False,
-        OTP.expires_at > datetime.utcnow()
-    ).first()
+    user_data = otp_cache.get(email)
+    now = datetime.utcnow()
     
-    if not otp_record:
+    if not user_data or user_data.get("otp_code") != otp_code or user_data.get("expires_at", now) <= now:
         raise HTTPException(status_code=400, detail="Invalid or expired OTP")
         
-    # Mark as used
-    otp_record.is_used = True
-    db.commit()
+    # Mark as used (by clearing the code)
+    user_data["otp_code"] = None
     
     user = db.query(User).filter(User.email == email).first()
     if not user:

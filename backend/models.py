@@ -24,13 +24,3 @@ class SavedContent(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User", back_populates="saved_contents")
-
-class OTP(Base):
-    __tablename__ = "otps"
-
-    id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, index=True)
-    otp_code = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    expires_at = Column(DateTime)
-    is_used = Column(Boolean, default=False)
