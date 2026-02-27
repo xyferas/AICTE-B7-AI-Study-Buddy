@@ -11,7 +11,7 @@ A professional, AI-powered learning copilot designed to help students transcribe
 - **� Flashcards**: Automatically generate interactive, swipable 3D flashcards (front/back) from topics or study material.
 - **�📅 Study Planner**: Generate a custom, balanced study schedule based on your subjects and deadlines.
 - **💾 Saved Content**: Securely store your generated summaries, notes, and plans in your personal dashboard.
-- **🔐 Passwordless OTP Login**: Secure and seamless authentication using email OTP via Resend API.
+- **🔐 Passwordless OTP Login**: Secure and seamless authentication using email OTP via SMTP.
 
 ---
 
@@ -60,8 +60,11 @@ HF_TOKEN=your_huggingface_token_here
 SECRET_KEY=your_secure_random_string_here
 ALGORITHM=HS256
 
-# Email Configuration (Resend API)
-RESEND_API_KEY=re_your_resend_api_key_here
+# Email Configuration (SMTP)
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SENDER_EMAIL=your_email@gmail.com
+SENDER_PASSWORD=your_app_password
 
 # Optional: Hugging Face Model selection
 HF_ASR_MODEL=openai/whisper-large-v3
