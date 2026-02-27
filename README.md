@@ -11,7 +11,7 @@ A professional, AI-powered learning copilot designed to help students transcribe
 - **� Flashcards**: Automatically generate interactive, swipable 3D flashcards (front/back) from topics or study material.
 - **�📅 Study Planner**: Generate a custom, balanced study schedule based on your subjects and deadlines.
 - **💾 Saved Content**: Securely store your generated summaries, notes, and plans in your personal dashboard.
-- **🔐 Passwordless OTP Login**: Secure and seamless authentication using email OTP via SMTP.
+- **🔐 Passwordless OTP Login**: Secure and seamless authentication using email OTP via Resend API.
 
 ---
 
