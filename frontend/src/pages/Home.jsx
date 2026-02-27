@@ -202,7 +202,7 @@ export default function Home() {
                 <div className="container mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between text-slate-500 text-sm">
                     <p>© {new Date().getFullYear()} StudyBuddy AI | Made by <a href="https://github.com/xyferas" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors">xyferas</a></p>
                     <div className="flex gap-6 mt-4 md:mt-0">
-                        <a href="https://linkedin.com/in/aswinmuraliofficial" target="_blank" rel="noopener noreferrer" className="hover:text-slate-300 transition-colors">LinkedIn</a>
+                        <a href="https://linkedin.com/in/aswinmuralik" target="_blank" rel="noopener noreferrer" className="hover:text-slate-300 transition-colors">LinkedIn</a>
                         <Link to="#" className="hover:text-slate-300 transition-colors">Privacy</Link>
                         <Link to="#" className="hover:text-slate-300 transition-colors">Terms</Link>
                     </div>

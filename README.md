@@ -8,8 +8,10 @@ A professional, AI-powered learning copilot designed to help students transcribe
 - **📝 Notes Summarizer**: Paste long-form notes and get concise, structured summaries. Download as text.
 - **🎤 Voice to Notes**: Upload lecture audio for high-fidelity transcription and auto-summarization.
 - **🧠 Quiz Generator**: Instantly create Multiple Choice Questions from your study materials with interactive grading.
-- **📅 Study Planner**: Generate a custom, balanced study schedule based on your subjects and deadlines.
+- **� Flashcards**: Automatically generate interactive, swipable 3D flashcards (front/back) from topics or study material.
+- **�📅 Study Planner**: Generate a custom, balanced study schedule based on your subjects and deadlines.
 - **💾 Saved Content**: Securely store your generated summaries, notes, and plans in your personal dashboard.
+- **🔐 Passwordless OTP Login**: Secure and seamless authentication using email OTP via SMTP.
 
 ---
 
@@ -58,6 +60,13 @@ HF_TOKEN=your_huggingface_token_here
 SECRET_KEY=your_secure_random_string_here
 ALGORITHM=HS256
 
+# Email Configuration (SMTP)
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SENDER_EMAIL=your_email@gmail.com
+SENDER_PASSWORD=your_app_password
+
+
 # Optional: Hugging Face Model selection
 HF_ASR_MODEL=openai/whisper-large-v3
 HF_PROVIDER=fal-ai
@@ -92,3 +101,10 @@ The architecture is split into a frontend and a backend, allowing for flexible d
 - **Frontend**: Can be easily deployed as a static site to Vercel or Netlify.
 
 *Note: For production, ensure you update CORS origins in FastAPI (`main.py`) and API Base URLs in React (`axios` requests).*
+
+---
+
+## 🤝 Connect & Contact
+
+- **GitHub**: [@xyferas](https://github.com/xyferas)
+- **LinkedIn**: [Aswin Murali](https://linkedin.com/in/aswinmuralik)
