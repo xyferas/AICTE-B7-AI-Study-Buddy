@@ -9,14 +9,7 @@ import secrets
 
 from database import engine, get_db, Base
 from models import User, SavedContent
-from collections import defaultdict
-from typing import Dict, Any
-
-# In-memory store for OTPs and rate limiting
-# Format: { "email@example.com": { "otp_code": "123456", "expires_at": datetime, "requests": [datetime, ...] } }
-otp_cache: Dict[str, Dict[str, Any]] = defaultdict(lambda: {"requests": []})
 from auth import verify_password, get_password_hash, create_access_token, get_current_user, ACCESS_TOKEN_EXPIRE_MINUTES
-from email_utils import send_otp_email
 
 import ai_chat
 import summarizer
@@ -48,13 +41,6 @@ class UserCreate(BaseModel):
 class LoginData(BaseModel):
     email: str
     password: str
-
-class OTPRequestSchema(BaseModel):
-    email: str
-
-class OTPVerifySchema(BaseModel):
-    email: str
-    otp_code: str
 
 class Token(BaseModel):
     access_token: str
@@ -124,63 +110,6 @@ def login(login_data: LoginData, db: Session = Depends(get_db)):
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-@app.post("/api/request-otp")
-def request_otp(request: OTPRequestSchema):
-    email = request.email.strip().lower()
-    now = datetime.utcnow()
-    user_data = otp_cache[email]
-    
-    # Clean up requests older than 5 minutes for rate limiting
-    five_mins_ago = now - timedelta(minutes=5)
-    user_data["requests"] = [req_time for req_time in user_data["requests"] if req_time >= five_mins_ago]
-    
-    if len(user_data["requests"]) >= 5:
-        raise HTTPException(status_code=429, detail="Rate limit exceeded. Maximum 5 requests per 5 minutes.")
-        
-    otp_code = "".join([str(secrets.randbelow(10)) for _ in range(6)])
-    expires_at = now + timedelta(minutes=5)
-    
-    # Store in memory
-    user_data["otp_code"] = otp_code
-    user_data["expires_at"] = expires_at
-    user_data["requests"].append(now)
-    
-    # Send OTP via Email
-    email_sent = send_otp_email(email, otp_code)
-    
-    if not email_sent:
-        # If SMTP fails explicitly, we might still allow the user to see the console if dev, or raise 500
-        # For seamless experience we'll just log it. The console fallback triggers if completely missing.
-        print(f"Warning: Primary SMTP transport failed for {email}.")
-    
-    return {"message": "OTP sent successfully"}
-
-@app.post("/api/verify-otp", response_model=Token)
-def verify_otp(request: OTPVerifySchema, db: Session = Depends(get_db)):
-    email = request.email.strip().lower()
-    otp_code = request.otp_code.strip()
-    
-    user_data = otp_cache.get(email)
-    now = datetime.utcnow()
-    
-    if not user_data or user_data.get("otp_code") != otp_code or user_data.get("expires_at", now) <= now:
-        raise HTTPException(status_code=400, detail="Invalid or expired OTP")
-        
-    # Mark as used (by clearing the code)
-    user_data["otp_code"] = None
-    
-    user = db.query(User).filter(User.email == email).first()
-    if not user:
-        user = User(name=email.split("@")[0], email=email, hashed_password="")
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-        
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.email}, expires_delta=access_token_expires
-    )
-    return {"access_token": access_token, "token_type": "bearer"}
 
 @app.get("/api/me")
 def read_users_me(current_user: User = Depends(get_current_user)):
