@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { MessageSquare, FileText, Mic, BrainCircuit, Calendar, LogOut, Menu, X, Bookmark } from 'lucide-react';
+import { MessageSquare, FileText, Mic, BrainCircuit, Calendar, LogOut, Menu, X, Bookmark, Github, GitFork, Home, Layers, BookOpen } from 'lucide-react';
 import ChatTab from '../components/ChatTab';
 import SummarizeTab from '../components/SummarizeTab';
 import VoiceNotesTab from '../components/VoiceNotesTab';
 import QuizTab from '../components/QuizTab';
+import FlashcardsTab from '../components/FlashcardsTab';
 import PlannerTab from '../components/PlannerTab';
 import SavedItemsTab from '../components/SavedItemsTab';
 
@@ -18,6 +20,7 @@ export default function Dashboard() {
         { id: 'notes', name: 'Notes Summarizer', icon: FileText },
         { id: 'voice', name: 'Voice to Notes', icon: Mic },
         { id: 'quiz', name: 'Quiz Generator', icon: BrainCircuit },
+        { id: 'flashcards', name: 'Flashcards', icon: Layers },
         { id: 'planner', name: 'Study Planner', icon: Calendar },
         { id: 'saved', name: 'Saved Items', icon: Bookmark },
     ];
@@ -37,8 +40,13 @@ export default function Dashboard() {
             {/* Sidebar */}
             <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#0A0F1C]/80 border-r border-white/5 backdrop-blur-2xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-72 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="h-full flex flex-col">
-                    <div className="h-16 flex items-center px-6 border-b border-slate-700 bg-slate-800/50 backdrop-blur-xl">
-                        <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">AI Study Buddy</span>
+                    <div className="h-16 flex items-center px-6 border-b border-slate-700 bg-slate-800/50 backdrop-blur-xl gap-3">
+                        <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-b from-blue-500/20 to-blue-600/10 border border-blue-500/20">
+                            <BookOpen className="text-blue-400 w-4 h-4" />
+                        </div>
+                        <Link to="/" className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent hover:opacity-80 transition-opacity">
+                            AI Study Buddy
+                        </Link>
                     </div>
 
                     <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
@@ -88,14 +96,44 @@ export default function Dashboard() {
             {/* Main content */}
             <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.15),rgba(255,255,255,0))]">
                 <header className="h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8 border-b border-slate-700/50 bg-slate-900/50 backdrop-blur-xl shrink-0">
-                    <button
-                        onClick={() => setMobileMenuOpen(true)}
-                        className="lg:hidden p-2 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-                    >
-                        <Menu size={24} />
-                    </button>
-                    <div className="text-lg font-semibold text-white ml-2 lg:ml-0">
-                        {navigation.find(n => n.id === activeTab)?.name}
+                    <div className="flex items-center">
+                        <button
+                            onClick={() => setMobileMenuOpen(true)}
+                            className="lg:hidden p-2 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors mr-2"
+                        >
+                            <Menu size={24} />
+                        </button>
+                        <div className="text-lg font-semibold text-white">
+                            {navigation.find(n => n.id === activeTab)?.name}
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 sm:gap-6">
+                        <Link to="/" className="flex items-center gap-2 text-sm font-medium text-slate-300 hover:text-white transition-colors">
+                            <Home size={16} />
+                            <span className="hidden sm:inline">Home</span>
+                        </Link>
+
+                        <div className="hidden sm:flex items-center gap-4 pl-4 sm:pl-6 border-l border-slate-700">
+                            <a
+                                href="https://github.com/xyferas/AICTE-B7-AI-Study-Buddy"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 text-sm font-medium text-slate-300 hover:text-white transition-colors group"
+                            >
+                                <Github className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                                <span>Star</span>
+                            </a>
+                            <a
+                                href="https://github.com/xyferas/AICTE-B7-AI-Study-Buddy/fork"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 text-sm font-medium text-slate-300 hover:text-white transition-colors group"
+                            >
+                                <GitFork className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                                <span>Fork</span>
+                            </a>
+                        </div>
                     </div>
                 </header>
 
@@ -105,8 +143,9 @@ export default function Dashboard() {
                         <div className={activeTab === 'notes' ? 'block h-full' : 'hidden'}><SummarizeTab /></div>
                         <div className={activeTab === 'voice' ? 'block h-full' : 'hidden'}><VoiceNotesTab /></div>
                         <div className={activeTab === 'quiz' ? 'block h-full' : 'hidden'}><QuizTab /></div>
+                        <div className={activeTab === 'flashcards' ? 'block h-full' : 'hidden'}><FlashcardsTab /></div>
                         <div className={activeTab === 'planner' ? 'block h-full' : 'hidden'}><PlannerTab /></div>
-                        <div className={activeTab === 'saved' ? 'block h-full' : 'hidden'}><SavedItemsTab /></div>
+                        <div className={activeTab === 'saved' ? 'block h-full' : 'hidden'}><SavedItemsTab isActive={activeTab === 'saved'} /></div>
                     </div>
                 </div>
             </main>

@@ -5,14 +5,17 @@ from datetime import timedelta, datetime
 import os
 from pydantic import BaseModel
 from typing import Optional, List
+import secrets
 
 from database import engine, get_db, Base
-from models import User, SavedContent
+from models import User, SavedContent, OTP
 from auth import verify_password, get_password_hash, create_access_token, get_current_user, ACCESS_TOKEN_EXPIRE_MINUTES
+from email_utils import send_otp_email
 
 import ai_chat
 import summarizer
 import quiz_generator
+import flashcard_generator
 import speech_to_text
 import study_planner
 
@@ -39,6 +42,13 @@ class UserCreate(BaseModel):
 class LoginData(BaseModel):
     email: str
     password: str
+
+class OTPRequestSchema(BaseModel):
+    email: str
+
+class OTPVerifySchema(BaseModel):
+    email: str
+    otp_code: str
 
 class Token(BaseModel):
     access_token: str
@@ -108,6 +118,69 @@ def login(login_data: LoginData, db: Session = Depends(get_db)):
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
+@app.post("/api/request-otp")
+def request_otp(request: OTPRequestSchema, db: Session = Depends(get_db)):
+    email = request.email.strip().lower()
+    
+    # Check rate limit: max 5 requests per 5 minutes
+    five_mins_ago = datetime.utcnow() - timedelta(minutes=5)
+    recent_requests_count = db.query(OTP).filter(
+        OTP.email == email,
+        OTP.created_at >= five_mins_ago
+    ).count()
+    
+    if recent_requests_count >= 5:
+        raise HTTPException(status_code=429, detail="Rate limit exceeded. Maximum 5 requests per 5 minutes.")
+        
+    otp_code = "".join([str(secrets.randbelow(10)) for _ in range(6)])
+    expires_at = datetime.utcnow() + timedelta(minutes=5)
+    
+    new_otp = OTP(email=email, otp_code=otp_code, expires_at=expires_at)
+    db.add(new_otp)
+    db.commit()
+    
+    # Send OTP via Email
+    email_sent = send_otp_email(email, otp_code)
+    
+    if not email_sent:
+        # If SMTP fails explicitly, we might still allow the user to see the console if dev, or raise 500
+        # For seamless experience we'll just log it. The console fallback triggers if completely missing.
+        print(f"Warning: Primary SMTP transport failed for {email}.")
+    
+    return {"message": "OTP sent successfully"}
+
+@app.post("/api/verify-otp", response_model=Token)
+def verify_otp(request: OTPVerifySchema, db: Session = Depends(get_db)):
+    email = request.email.strip().lower()
+    otp_code = request.otp_code.strip()
+    
+    otp_record = db.query(OTP).filter(
+        OTP.email == email,
+        OTP.otp_code == otp_code,
+        OTP.is_used == False,
+        OTP.expires_at > datetime.utcnow()
+    ).first()
+    
+    if not otp_record:
+        raise HTTPException(status_code=400, detail="Invalid or expired OTP")
+        
+    # Mark as used
+    otp_record.is_used = True
+    db.commit()
+    
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        user = User(name=email.split("@")[0], email=email, hashed_password="")
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.email}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
 @app.get("/api/me")
 def read_users_me(current_user: User = Depends(get_current_user)):
     return {"email": current_user.email, "name": current_user.name}
@@ -132,6 +205,16 @@ def summarize(request: SummarizeRequest, current_user: User = Depends(get_curren
 def generate_quiz(request: QuizRequest, current_user: User = Depends(get_current_user)):
     try:
         result = quiz_generator.generate_quiz(request.text, request.topic)
+        if "error" in result:
+             raise HTTPException(status_code=400, detail=result["error"])
+        return result
+    except Exception as e:
+        handle_api_error(e)
+
+@app.post("/api/flashcards")
+def generate_flashcards(request: QuizRequest, current_user: User = Depends(get_current_user)):
+    try:
+        result = flashcard_generator.generate_flashcards(request.text, request.topic)
         if "error" in result:
              raise HTTPException(status_code=400, detail=result["error"])
         return result

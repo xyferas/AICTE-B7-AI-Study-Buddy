@@ -120,7 +120,7 @@ export default function PlannerTab() {
                                 onChange={(e) => setHours(e.target.value)}
                                 className="w-full bg-slate-900/50 border border-slate-600 text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 outline-none transition-all appearance-none"
                             >
-                                {['1', '2', '3', '4', '5', '6+'].map(h => <option key={h} value={h}>{h}</option>)}
+                                {['1', '2', '3', '4', '5', '6+'].map(h => <option className="bg-[#0c1222] text-slate-200" key={h} value={h}>{h}</option>)}
                             </select>
                         </div>
                         <div>
@@ -130,7 +130,7 @@ export default function PlannerTab() {
                                 onChange={(e) => setDays(e.target.value)}
                                 className="w-full bg-slate-900/50 border border-slate-600 text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 outline-none transition-all appearance-none"
                             >
-                                {['1', '2', '3', '4', '5', '6', '7'].map(d => <option key={d} value={d}>{d}</option>)}
+                                {['1', '2', '3', '4', '5', '6', '7'].map(d => <option className="bg-[#0c1222] text-slate-200" key={d} value={d}>{d}</option>)}
                             </select>
                         </div>
                     </div>

@@ -160,7 +160,7 @@ export default function QuizTab() {
                             <BrainCircuit size={40} />
                         </div>
                         <h2 className="text-3xl font-extrabold text-white mb-3">Quiz Generator</h2>
-                        <p className="text-slate-400 max-w-md mx-auto">Test your knowledge automatically using artificial intelligence.</p>
+                        <p className="text-slate-400 max-w-md mx-auto">Test your knowledge with automatically generated quizzes.</p>
                     </div>
 
                     <div className="flex gap-4 mb-8 bg-slate-900/50 p-1.5 rounded-xl border border-white/10/50 relative z-10 w-max mx-auto">
@@ -210,7 +210,7 @@ export default function QuizTab() {
                             className="w-full py-4 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-bold text-lg flex items-center justify-center gap-2 transform transition-all active:scale-[0.98] shadow-lg shadow-pink-600/30 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? <Loader2 size={24} className="animate-spin" /> : <Play size={24} className="fill-current" />}
-                            {loading ? 'Generating 5 Questions...' : 'Start Quiz'}
+                            {loading ? 'Generating 5 Questions...' : 'Start Quiz / Flashcards'}
                         </button>
                     </div>
                 </div>

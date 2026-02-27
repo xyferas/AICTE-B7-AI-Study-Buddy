@@ -47,6 +47,16 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('token', res.data.access_token); // Added this line
     };
 
+    const requestOtp = async (email) => {
+        await axios.post(`${API_URL}/api/request-otp`, { email });
+    };
+
+    const verifyOtp = async (email, otp_code) => {
+        const res = await axios.post(`${API_URL}/api/verify-otp`, { email, otp_code });
+        setToken(res.data.access_token);
+        localStorage.setItem('token', res.data.access_token);
+    };
+
     const register = async (name, email, password) => {
         await axios.post(`${API_URL}/api/register`, { name, email, password });
     };
@@ -56,7 +66,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+        <AuthContext.Provider value={{ user, token, loading, login, register, logout, requestOtp, verifyOtp }}>
             {!loading && children}
         </AuthContext.Provider>
     );

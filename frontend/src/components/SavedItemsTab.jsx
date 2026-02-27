@@ -4,7 +4,7 @@ import { Bookmark, FileText, Calendar, Mic, Loader2, Trash2, X, Download } from 
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-export default function SavedItemsTab() {
+export default function SavedItemsTab({ isActive }) {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -27,8 +27,10 @@ export default function SavedItemsTab() {
     };
 
     useEffect(() => {
-        fetchItems();
-    }, []);
+        if (isActive) {
+            fetchItems();
+        }
+    }, [isActive]);
 
     const deleteItem = async (id, e) => {
         e.stopPropagation();

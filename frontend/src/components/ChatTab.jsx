@@ -15,10 +15,6 @@ export default function ChatTab() {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
-    useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
-
     const handleSend = async (e) => {
         e.preventDefault();
         if (!input.trim() || loading) return;
@@ -29,6 +25,11 @@ export default function ChatTab() {
         setInput('');
         setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
         setLoading(true);
+
+        // Scroll down when user sends a message to see the loader
+        setTimeout(() => {
+            scrollToBottom();
+        }, 100);
 
         try {
             const res = await axios.post(`${API_URL}/api/chat`, {
@@ -54,11 +55,11 @@ export default function ChatTab() {
                 <select
                     value={level}
                     onChange={(e) => setLevel(e.target.value)}
-                    className="bg-black/40 border border-white/10 text-white text-sm rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    className="bg-[#0c1222] border border-white/10 text-white text-sm rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none transition-all cursor-pointer"
                 >
-                    <option>Beginner</option>
-                    <option>Intermediate</option>
-                    <option>Advanced</option>
+                    <option className="bg-[#0c1222] text-slate-200" value="Beginner">Beginner</option>
+                    <option className="bg-[#0c1222] text-slate-200" value="Intermediate">Intermediate</option>
+                    <option className="bg-[#0c1222] text-slate-200" value="Advanced">Advanced</option>
                 </select>
             </div>
 
