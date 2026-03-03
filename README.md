@@ -101,4 +101,5 @@ The architecture is split into a frontend and a backend, allowing for flexible d
 ## 🤝 Connect & Contact
 
 - **GitHub**: [@xyferas](https://github.com/xyferas)
-- **LinkedIn**: [Aswin Murali](https://linkedin.com/in/aswinmuralik)
+- **LinkedIn**: [Aswin M](https://linkedin.com/in/aswinmuralik)
+
